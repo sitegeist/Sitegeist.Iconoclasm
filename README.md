@@ -1,8 +1,14 @@
 # Sitegeist.Iconoclasm 
 
-### Image optimization of images for Flow and Neos with the imagemin-cli tool. 
+### Image optimization of images for Flow and Neos using the imagemin-cli tool. 
 
-This package is inspired by MOC.ImageOptimizer https://packagist.org/packages/moc/imageoptimizer)
+This package is inspired by MOC.ImageOptimizer https://packagist.org/packages/moc/imageoptimizer
+and Sitegeist.Origami https://github.com/sitegeist/Sitegeist.Origami
+
+Deviations from the previously mentioned packages:
+- Use the imagemin cli tool and the plugins for that (other than Sitegeist.Origami and MOC.ImageOptimizer)
+- Rely on async thumbnails instead of using a jobqueue (other than Sitegeist.Origami) 
+- Use local temp files that are imported to support cloud storages (other than Sitegeist.Origami and MOC.ImageOptimizer)
 
 ### Authors & Sponsors
 
