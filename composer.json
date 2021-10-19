@@ -1,0 +1,26 @@
+{
+    "description": "Imagemin integration for Neos Images",
+    "type": "neos-package",
+    "name": "sitegeist/iconoclasm",
+    "require": {
+        "neos/media": "*"
+    },
+    "authors": [
+        {
+            "name": "Martin Ficzel",
+            "email": "ficzel@sitegeist.de",
+            "role": "Developer"
+        }
+    ],
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Sitegeist\\Iconoclasm\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Sitegeist.Iconoclasm"
+        }
+    }
+}
