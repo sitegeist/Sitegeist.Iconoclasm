@@ -1,15 +1,16 @@
 # Sitegeist.Iconoclasm 
 
-### Image optimization of images for Flow and Neos using the imagemin-cli tool or other tools. 
+### Image optimization of images for Flow and Neos using the imagemin-cli or other tools. 
 
 This package is inspired by MOC.ImageOptimizer https://packagist.org/packages/moc/imageoptimizer
-and Sitegeist.Origami https://github.com/sitegeist/Sitegeist.Origami 
+and Sitegeist.Origami https://github.com/sitegeist/Sitegeist.Origami that basically perform the same task. 
 
 Deviations from the previously mentioned packages:
-- Uses the imagemin cli tool by default for all types (other than Sitegeist.Origami and MOC.ImageOptimizer)
-- Does not need a jobqueue like Sitegeist.Origami becauese async thaumbnails are nowadays default.
-- Use local temporary files that are then imported to support cloud storages. 
-- Use file extensions on temporary files to support tools that rely on those. 
+- All mediaTypes that shall be optimized have to be enabled explicitly. 
+- Imagemin-cli is used by default for all enabled media types but can be replaced as needed.
+- Does not need a jobqueue like Sitegeist.Origami did because async thumbnails are nowadays default.
+- Local temporary files that are later imported should support cloud storages (not tested yet). 
+- Temorary files with file extensions allow to use tools that rely on file extensions. 
 
 ### Authors & Sponsors
 
@@ -17,20 +18,13 @@ Deviations from the previously mentioned packages:
 
 *The development and the public-releases of this package is generously sponsored by our employer http://www.sitegeist.de.*
 
-## Introduction
-
-Neos CMS / Flow framework package that optimizes generated thumbnail images (jpg, png, gif, svg and more) for web presentation.
-The original files of the editors are never affected since copies are always created for thumbnails.
-
-The optimization is done with the imagemin cli-tool and a set of plugins for that. 
-
 ## Installation
 
 Sitegeist.Iconoclasm is available via packagist. Just add "sitegeist/iconoclasm" to the require section of the 
 composer.json or run `composer require sitegeist/iconoclasm`. We use semantic-versioning so every breaking change 
 will increase the major-version number.
 
-In addition to the Flow Package the imagemin-cli and plugins for the required formats are available on the server.
+In addition to the Flow Package the imagemin-cli and all plugins or other tools have to be available on the server.
 You can install the libraries globally using `npm`:
 
 ```
@@ -42,9 +36,8 @@ sometimes requires additional libraries!!!
 
 ## Configuration
 
-Using the `Settings` configuration, multiple options can be adjusted.
-
-Each optimization for a media-format has to be enabled explicitly since by default all optimizations are disabled.
+Using the `Sitegeist.Iconoclasm` configuration, the used `command` can be configured. The `mediaTypes` section allows to 
+enable certain types and allows to override the global `command` for this type.  
 
 ```
 Sitegeist:
