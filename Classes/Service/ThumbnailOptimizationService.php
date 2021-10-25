@@ -96,6 +96,7 @@ class ThumbnailOptimizationService
 
         $this->logger->info(sprintf('Optimized image "%s" with command "%s"', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand));
         $optimizedResource = $this->resourceManager->importResource($tmpFileOptimized, $resource->getCollectionName());
+        $optimizedResource->setFilename($resource->getFilename());
         $thumbnail->setResource($optimizedResource);
         $this->resourceManager->deleteResource($resource);
 
