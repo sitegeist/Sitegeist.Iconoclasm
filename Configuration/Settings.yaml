@@ -1,34 +1,32 @@
 Sitegeist:
   Iconoclasm:
 
+
     #
     # The imagemin cli command, you may want to configure an explicit path here for your server
     #
     # The tool can be installed npm install --global imagemin-cli imagemin-pngquant imagemin-webp imagemin-mozjpeg imagemin-svgo
     #
-    command: 'imagemin'
+    command: 'imagemin {input} > {output}'
 
     #
     # The media types that are to be optimized
     #
-    # each media type has to be enabled and and allows to configure additional cli options
-    # to adjust the used plugins or quality settings.
+    # Each media type has to be `enabled` for optimizing. In case specific options or even
+    # an different command shall be used the global `command` can be overwritten for each type.
     #
     mediaTypes:
       'image/jpeg':
-        enabled: true
-        options: '--plugin=mozjpeg'
+        enabled: false
 
       'image/png':
-        enabled: true
-        options: '--plugin=pngquant'
+        enabled: false
 
       'image/webp':
-        enabled: true
-        options: '--plugin=webp'
+        enabled: false
 
       'image/gif':
-        enabled: true
+        enabled: false
 
       'image/svg':
-        enabled: true
+        enabled: false

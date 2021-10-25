@@ -64,8 +64,8 @@ class ThumbnailOptimizationService
             return;
         }
 
-        $temporaryInputPath = $this->createTemporaryPath('TemporaryThumbnailsToOptimize/');
-        $temporaryOutputPath = $this->createTemporaryPath('TemporaryThumbnailsOptimized/');
+        $temporaryInputPath = $this->createTemporaryPath('iconoclasm/input/');
+        $temporaryOutputPath = $this->createTemporaryPath('iconoclasm/output/');
         $temporaryFilename = $this->createTemporaryFilename($thumbnail->getResource());
 
         $tmpFileInput = $temporaryInputPath . $temporaryFilename;
@@ -77,10 +77,12 @@ class ThumbnailOptimizationService
         fclose($resourceStream);
         fclose($temporaryFileHandle);
 
-        $command = $this->command;
-        $options = $this->configuration[$mediaType]['options'] ?? '';
+        $shellCommand = str_replace(
+            ['{input}', '{output}'],
+            [escapeshellarg($tmpFileInput), escapeshellarg($tmpFileOptimized)],
+            $this->configuration[$mediaType]['command'] ?? $this->command
+        );
 
-        $shellCommand = $command . ' ' . escapeshellarg($tmpFileInput) . ' ' . $options . ' > ' . escapeshellarg($tmpFileOptimized);
         $output = [];
         exec($shellCommand, $output, $result);
         $failed = (int)$result !== 0;
@@ -90,16 +92,15 @@ class ThumbnailOptimizationService
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
-        } else {
-            $this->logger->info(sprintf('Optimized image "%s" with command "%s"', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand));
         }
 
+        $this->logger->info(sprintf('Optimized image "%s" with command "%s"', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand));
         $optimizedResource = $this->resourceManager->importResource($tmpFileOptimized, $resource->getCollectionName());
         $thumbnail->setResource($optimizedResource);
         $this->resourceManager->deleteResource($resource);
 
-        #unlink($tmpFileInput);
-        #unlink($tmpFileOptimized);
+        unlink($tmpFileInput);
+        unlink($tmpFileOptimized);
     }
 
     /**
