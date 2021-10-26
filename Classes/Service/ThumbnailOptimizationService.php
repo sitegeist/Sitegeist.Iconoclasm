@@ -44,6 +44,8 @@ class ThumbnailOptimizationService
     protected $resourceManager;
 
     /**
+     * Optimize the given thumbnails using local copies that later replace the original resource
+     *
      * @param Thumbnail $asset
      */
     public function optimizeThumbnail(Thumbnail $thumbnail)
@@ -94,6 +96,29 @@ class ThumbnailOptimizationService
             return;
         }
 
+        $filesizeOriginal = filesize($tmpFileInput);
+        $filesizeOptimized = filesize($tmpFileOptimized);
+
+        if ($filesizeOriginal === false || $filesizeOptimized === false) {
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty files', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
+            unlink($tmpFileInput);
+            unlink($tmpFileOptimized);
+            return;
+        }
+
+        if ($filesizeOptimized >= $filesizeOriginal) {
+            $this->logger->warning(sprintf(
+                'Optimizing image "%s" with command "%s" yielded no size reduction %s > %s bytes',
+                $thumbnail->getOriginalAsset()->getLabel(),
+                $shellCommand,
+                $filesizeOriginal,
+                $filesizeOptimized
+            ));
+            unlink($tmpFileInput);
+            unlink($tmpFileOptimized);
+            return;
+        }
+
         $this->logger->info(sprintf('Optimized image "%s" with command "%s"', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand));
         $optimizedResource = $this->resourceManager->importResource($tmpFileOptimized, $resource->getCollectionName());
         $optimizedResource->setFilename($resource->getFilename());
@@ -105,6 +130,8 @@ class ThumbnailOptimizationService
     }
 
     /**
+     * Create a temporary path with the given postfix and return the result
+     *
      * @param string $postfix
      * @return string
      */
@@ -116,6 +143,11 @@ class ThumbnailOptimizationService
     }
 
     /**
+     * Create a temporary name for the image that will be optimized. The name has to be unique to avoid collisions
+     * in case of two processes try to optimize the same file
+     *
+     * @see: Neos\Flow\Classes\ResourceManagement\PersistentResource->createTemporaryLocalCopy
+     *
      * @param PersistentResource $resource
      * @return string
      */
