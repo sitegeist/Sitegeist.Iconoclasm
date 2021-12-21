@@ -111,15 +111,22 @@ class ThumbnailOptimizationService
                 'Optimizing image "%s" with command "%s" yielded no size reduction %s > %s bytes',
                 $thumbnail->getOriginalAsset()->getLabel(),
                 $shellCommand,
-                $filesizeOriginal,
-                $filesizeOptimized
+                Utility\Files::bytesToSizeString($filesizeOriginal),
+                Utility\Files::bytesToSizeString($filesizeOptimized)
             ));
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
         }
 
-        $this->logger->info(sprintf('Optimized image "%s" with command "%s"', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand));
+        $this->logger->info(sprintf(
+            'Optimized image "%s" with command "%s" reduction %s > %s bytes - reduction %s%%',
+            $thumbnail->getOriginalAsset()->getLabel(),
+            $shellCommand,
+            Utility\Files::bytesToSizeString($filesizeOriginal),
+            Utility\Files::bytesToSizeString($filesizeOptimized),
+            number_format(100.0 - ($filesizeOptimized / $filesizeOriginal * 100), 2)
+        ));
         $optimizedResource = $this->resourceManager->importResource($tmpFileOptimized, $resource->getCollectionName());
         $optimizedResource->setFilename($resource->getFilename());
         $thumbnail->setResource($optimizedResource);
