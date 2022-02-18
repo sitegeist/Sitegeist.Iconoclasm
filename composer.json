@@ -3,7 +3,7 @@
     "type": "neos-package",
     "name": "sitegeist/iconoclasm",
     "require": {
-        "neos/media": "*"
+        "neos/media": "^7.3 || dev-master"
     },
     "authors": [
         {
