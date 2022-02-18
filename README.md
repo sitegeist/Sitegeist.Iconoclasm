@@ -31,6 +31,12 @@ You can install the libraries globally using `npm`:
 npm install --global imagemin-cli imagemin-pngquant imagemin-webp imagemin-mozjpeg
 ```
 
+You can also install the packages into a dedicated folder instead globally. In this case you will have to configure 
+the imegemin command with full pathes like `/your/folder/node_modules/imagemin-cli/cli.js`
+```
+npm install --prefix /your/folder imagemin-cli imagemin-pngquant imagemin-webp imagemin-mozjpeg
+```
+
 !!!Please verify the that the cli tools work by executing each plugin separately. Especially the imagemin-webp tool 
 sometimes requires additional libraries!!!
 
