@@ -79,6 +79,14 @@ class ThumbnailOptimizationService
         fclose($resourceStream);
         fclose($temporaryFileHandle);
 
+        $filesizeOriginal = filesize($tmpFileInput);
+        if ((bool)$filesizeOriginal === false) {
+            $this->logger->error(sprintf('Creating temporary copy of original image "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel()), $output);
+            unlink($tmpFileInput);
+            unlink($tmpFileOptimized);
+            return;
+        }
+        
         $shellCommand = str_replace(
             ['{input}', '{output}'],
             [escapeshellarg($tmpFileInput), escapeshellarg($tmpFileOptimized)],
@@ -96,11 +104,9 @@ class ThumbnailOptimizationService
             return;
         }
 
-        $filesizeOriginal = filesize($tmpFileInput);
         $filesizeOptimized = filesize($tmpFileOptimized);
-
-        if ((bool)$filesizeOriginal === false || (bool)$filesizeOptimized === false) {
-            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty files', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
+        if ((bool)$filesizeOptimized === false) {
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
