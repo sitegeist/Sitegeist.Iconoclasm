@@ -99,7 +99,7 @@ class ThumbnailOptimizationService
         $filesizeOriginal = filesize($tmpFileInput);
         $filesizeOptimized = filesize($tmpFileOptimized);
 
-        if ($filesizeOriginal === false || $filesizeOptimized === false) {
+        if ((bool)$filesizeOriginal === false || (bool)$filesizeOptimized === false) {
             $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty files', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
