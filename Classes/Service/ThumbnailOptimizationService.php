@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Sitegeist\Iconoclasm\Service;
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Log\Utility\LogEnvironment;
 use Neos\Flow\ResourceManagement\PersistentResource;
 use Neos\Flow\ResourceManagement\ResourceManager;
 use Neos\Media\Domain\Model\Thumbnail;
@@ -45,8 +46,6 @@ class ThumbnailOptimizationService
 
     /**
      * Optimize the given thumbnails using local copies that later replace the original resource
-     *
-     * @param Thumbnail $asset
      */
     public function optimizeThumbnail(Thumbnail $thumbnail)
     {
@@ -73,7 +72,7 @@ class ThumbnailOptimizationService
         $tmpFileInput = $temporaryInputPath . $temporaryFilename;
         $tmpFileOptimized = $temporaryOutputPath . $temporaryFilename;
 
-        $temporaryFileHandle = fopen($tmpFileInput, 'w');
+        $temporaryFileHandle = fopen($tmpFileInput, 'wb');
         $resourceStream = $resource->getStream();
         stream_copy_to_stream($resourceStream, $temporaryFileHandle);
         fclose($resourceStream);
@@ -81,12 +80,12 @@ class ThumbnailOptimizationService
 
         $filesizeOriginal = filesize($tmpFileInput);
         if ((bool)$filesizeOriginal === false) {
-            $this->logger->error(sprintf('Creating temporary copy of original image "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel()), $output);
+            $this->logger->error(sprintf('Creating temporary copy of original image "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel()), LogEnvironment::fromMethodName(__METHOD__));
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
         }
-        
+
         $shellCommand = str_replace(
             ['{input}', '{output}'],
             [escapeshellarg($tmpFileInput), escapeshellarg($tmpFileOptimized)],
@@ -98,7 +97,7 @@ class ThumbnailOptimizationService
         $failed = (int)$result !== 0;
 
         if ($failed) {
-            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" failed', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" failed', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
@@ -106,7 +105,7 @@ class ThumbnailOptimizationService
 
         $filesizeOptimized = filesize($tmpFileOptimized);
         if ((bool)$filesizeOptimized === false) {
-            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), $output);
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
@@ -144,9 +143,6 @@ class ThumbnailOptimizationService
 
     /**
      * Create a temporary path with the given postfix and return the result
-     *
-     * @param string $postfix
-     * @return string
      */
     protected function createTemporaryPath(string $postfix): string
     {
@@ -160,9 +156,6 @@ class ThumbnailOptimizationService
      * in case of two processes try to optimize the same file
      *
      * @see: Neos\Flow\Classes\ResourceManagement\PersistentResource->createTemporaryLocalCopy
-     *
-     * @param PersistentResource $resource
-     * @return string
      */
     protected function createTemporaryFilename(PersistentResource $resource): string
     {
