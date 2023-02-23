@@ -75,6 +75,9 @@ class ThumbnailOptimizationService
 
         $temporaryFileHandle = fopen($tmpFileInput, 'w');
         $resourceStream = $resource->getStream();
+        if (!$resourceStream) {
+            return;
+        }
         stream_copy_to_stream($resourceStream, $temporaryFileHandle);
         fclose($resourceStream);
         fclose($temporaryFileHandle);
