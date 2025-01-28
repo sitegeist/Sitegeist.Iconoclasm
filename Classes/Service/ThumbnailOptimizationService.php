@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Sitegeist\Iconoclasm\Service;
@@ -22,13 +23,13 @@ class ThumbnailOptimizationService
 
     /**
      * @Flow\InjectConfiguration(path="command")
-     * @var array
+     * @var string
      */
     protected $command;
 
     /**
      * @Flow\InjectConfiguration(path="mediaTypes")
-     * @var array
+     * @var array<string, array{enabled:bool, command?:string}>
      */
     protected $configuration;
 
@@ -47,8 +48,11 @@ class ThumbnailOptimizationService
     /**
      * Optimize the given thumbnails using local copies that later replace the original resource
      */
-    public function optimizeThumbnail(Thumbnail $thumbnail)
+    public function optimizeThumbnail(Thumbnail $thumbnail): void
     {
+        /**
+         * @var null|PersistentResource $resource
+         */
         $resource = $thumbnail->getResource();
         if (!$resource) {
             return;
@@ -73,6 +77,12 @@ class ThumbnailOptimizationService
         $tmpFileOptimized = $temporaryOutputPath . $temporaryFilename;
 
         $temporaryFileHandle = fopen($tmpFileInput, 'wb');
+        if (!$temporaryFileHandle) {
+            return;
+        }
+        /**
+         * @var resource|false $resourceStream
+         */
         $resourceStream = $resource->getStream();
         if (!$resourceStream) {
             return;
@@ -83,7 +93,7 @@ class ThumbnailOptimizationService
 
         $filesizeOriginal = filesize($tmpFileInput);
         if ((bool)$filesizeOriginal === false) {
-            $this->logger->error(sprintf('Creating temporary copy of original image "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel()), LogEnvironment::fromMethodName(__METHOD__));
+            $this->logger->error(sprintf('Creating temporary copy of original image "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getResource()->getFilename()), LogEnvironment::fromMethodName(__METHOD__));
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
@@ -100,15 +110,15 @@ class ThumbnailOptimizationService
         $failed = (int)$result !== 0;
 
         if ($failed) {
-            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" failed', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" failed', $thumbnail->getOriginalAsset()->getResource()->getFilename(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
         }
 
         $filesizeOptimized = filesize($tmpFileOptimized);
-        if ((bool)$filesizeOptimized === false) {
-            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty file', $thumbnail->getOriginalAsset()->getLabel(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
+        if ($filesizeOptimized === false || $filesizeOptimized === 0) {
+            $this->logger->error(sprintf('Optimizing image "%s" with command "%s" resulted in empty files', $thumbnail->getOriginalAsset()->getResource()->getFilename(), $shellCommand), LogEnvironment::fromMethodName(__METHOD__) + $output);
             unlink($tmpFileInput);
             unlink($tmpFileOptimized);
             return;
@@ -117,7 +127,7 @@ class ThumbnailOptimizationService
         if ($filesizeOptimized >= $filesizeOriginal) {
             $this->logger->warning(sprintf(
                 'Optimizing image "%s" with command "%s" yielded no size reduction %s > %s bytes',
-                $thumbnail->getOriginalAsset()->getLabel(),
+                $thumbnail->getOriginalAsset()->getResource()->getFilename(),
                 $shellCommand,
                 Utility\Files::bytesToSizeString($filesizeOriginal, 2),
                 Utility\Files::bytesToSizeString($filesizeOptimized, 2)
@@ -129,7 +139,7 @@ class ThumbnailOptimizationService
 
         $this->logger->info(sprintf(
             'Optimized image "%s" with command "%s" reduction %s > %s bytes - reduction %s %%',
-            $thumbnail->getOriginalAsset()->getLabel(),
+            $thumbnail->getOriginalAsset()->getResource()->getFilename(),
             $shellCommand,
             Utility\Files::bytesToSizeString($filesizeOriginal, 2),
             Utility\Files::bytesToSizeString($filesizeOptimized, 2),

@@ -1,4 +1,5 @@
 <?php
+
 namespace Sitegeist\Iconoclasm\Aspect;
 
 use Neos\Eel\Exception;
